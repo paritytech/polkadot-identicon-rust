@@ -3,11 +3,10 @@
 
 ## Overview
 
-This is a crate for generating standard 19-circle icons in png format.  
+This is a lib crate for generating standard 19-circle icons in png and in svg format.  
 
 The code is following the published javascript code for icon generation from `https://github.com/paritytech/oo7/blob/master/packages/polkadot-identicon/src/index.jsx`.  
 
-Currently the crate is operated through adjusting `main.rs`, and plots png file as successful output. This could be modified if needed.  
 
 
 ## Input
@@ -15,16 +14,18 @@ Currently the crate is operated through adjusting `main.rs`, and plots png file 
 Input requires:  
 
 1. actual input data:  
-    - `Vec<u8>` to be used with `plot_icon_from_vec` function  
-    - or hex format string to be used with `plot_icon_from_hex` function  
-    - or base58 format string to be used with `plot_icon_from_base58` function  
-2. size parameter `halfsize_in_pixels` of final file (created image is square, with `halfsize_in_pixels`*2+1 side)  
+    - `Vec<u8>` to be used with `plot_png_from_vec` and `plot_svg_from_vec` functions  
+    - or hex format string to be used with `plot_png_from_hex` and `plot_svg_from_hex` functions  
+    - or base58 format string to be used with `plot_png_from_base58` and `plot_svg_from_base58` functions  
+2. size parameter `halfsize` of final file (created image is square, with ``halfsize`*2+1`` pixels side for png and ``halfsize`*2`` for svg)  
 3. output file name  
 
 
-## Tests
+## Tests and Examples
 
 Currently there are tests to check if the color sets calculated for Alice and Bob are identical to the colors in the corresponding well-known icons.  
+
+Examples are plotting both .png and .svg icons for base58 westend Alice address, and hex westend genesis hash.
 
 
 ## Notes

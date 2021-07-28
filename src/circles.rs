@@ -1,5 +1,8 @@
+use svg::node::element;
+use hex;
+
 const BACKGROUND_COLOR: [u8; 4] = [255, 255, 255, 0];
-const FOREGROUND_COLOR: [u8; 4] = [238, 238, 238, 255];
+pub const FOREGROUND_COLOR: [u8; 4] = [238, 238, 238, 255];
 
 /// Struct to store information about the circle
 struct Circle {
@@ -126,7 +129,7 @@ fn get_colored_circles (center_to_center: i32, small_radius: i32, colors: Vec<[u
 }
 
 /// function to calculate contents of the png image with 19-circle icon
-pub fn calculate_picture_data (big_radius: i32, colors: Vec<[u8; 4]>) -> Vec<u8> {
+pub fn calculate_png_data (big_radius: i32, colors: Vec<[u8; 4]>) -> Vec<u8> {
     
     let mut data: Vec<u8> = Vec::new();
     let small_radius = big_radius/32*5;
@@ -162,3 +165,36 @@ pub fn calculate_picture_data (big_radius: i32, colors: Vec<[u8; 4]>) -> Vec<u8>
     data
 }
 
+
+/// Function to calculate svg file contents (using element::Circle from svg crate)
+pub fn calculate_svg_data (big_radius: i32, colors: Vec<[u8; 4]>) -> Vec<element::Circle> {
+    
+    let mut out: Vec<element::Circle> = Vec::with_capacity(20);
+    out.push(element::Circle::new()
+        .set("cx", 0)
+        .set("cy", 0)
+        .set("r", big_radius)
+        .set("fill", rgba_to_hex(FOREGROUND_COLOR))
+        .set("stroke", "none")
+    );
+    let small_radius = big_radius/32*5;
+    let center_to_center = big_radius/8*3;
+    let positions = position_circle_set(center_to_center);
+    for (i, position) in positions.iter().enumerate() {
+        out.push(element::Circle::new()
+            .set("cx", position.x_center)
+            .set("cy", position.y_center)
+            .set("r", small_radius)
+            .set("fill", rgba_to_hex(colors[i]))
+            .set("stroke", "none")
+        );
+    }
+    out
+}
+
+
+/// Helper function to transform RGBA [u8; 4] color needed for png into 
+/// hex string color needed for svg
+fn rgba_to_hex (rgba_color: [u8; 4]) -> String {
+    format!("#{}", hex::encode(vec![rgba_color[0], rgba_color[1], rgba_color[2]]))
+}

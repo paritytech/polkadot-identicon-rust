@@ -1,5 +1,8 @@
 use palette::{Hsl, FromColor, Srgb, FromComponent, RgbHue};
 use blake2_rfc::blake2b::blake2b;
+use anyhow::anyhow;
+
+use crate::circles::FOREGROUND_COLOR;
 
 /// Struct to store default coloring schemes
 struct SchemeElement {
@@ -80,7 +83,7 @@ pub fn get_colors_from_vec (into_id: &Vec<u8>) -> Vec<[u8; 4]> {
         let b = x.wrapping_add((i as u8 % 28).wrapping_mul(58));
         let new = match b {
             0 => [4, 4, 4, 255],
-            255 => [0, 0, 0, 0], // transparent
+            255 => FOREGROUND_COLOR, // transparent
             _ => {
             // HSL color hue in degrees
             // calculated as integer, same as in js code
@@ -160,7 +163,7 @@ pub fn get_colors_from_vec (into_id: &Vec<u8>) -> Vec<[u8; 4]> {
 /// Function to choose the coloring scheme based on value d.
 /// Note that d is calculated as remainder of division by total sum of frequencies,
 /// so it can not exceed the total sum of frequencies
-fn choose_scheme (schemes: Vec<SchemeElement>, d: u32) -> Result<SchemeElement, &'static str> {
+fn choose_scheme (schemes: Vec<SchemeElement>, d: u32) -> anyhow::Result<SchemeElement> {
     let mut sum = 0;
     let mut found_scheme = None;
     for x in schemes.into_iter() {
@@ -172,7 +175,7 @@ fn choose_scheme (schemes: Vec<SchemeElement>, d: u32) -> Result<SchemeElement, 
     }
     match found_scheme {
         Some(x) => Ok(x),
-        None => return Err("not accessible"),
+        None => return Err(anyhow!("not accessible")),
     }
 }
 

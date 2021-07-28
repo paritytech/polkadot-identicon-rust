@@ -12,3 +12,9 @@ png = "0.16.8"
 blake2-rfc = "0.2.18"
 palette = "0.6.0"
 base58 = "0.1.0"
+svg = "0.10.0"
+anyhow = "1.0.42"
+
+[lib]
+name = "plot_icon"
+crate-type = ["lib"]
