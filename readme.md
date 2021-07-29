@@ -5,11 +5,24 @@
 
 This is a lib crate for generating standard 19-circle icons in png and in svg format.  
 
+Output could be in form of .png or .svg files, or the Vec<u8> with png data, or svg::Document with svg data.  
+
 The code is following the published javascript code for icon generation from `https://github.com/paritytech/oo7/blob/master/packages/polkadot-identicon/src/index.jsx`.  
 
 
 
-## Input
+## Input needed to generate data (to be used in Signer)  
+
+Input requires:  
+
+1. actual input data:  
+    - `Vec<u8>` to be used with `png_data_from_vec` and `svg_from_vec` functions  
+    - or hex format string to be used with `png_data_from_hex` and `svg_from_hex` functions  
+    - or base58 format string to be used with `png_data_from_base58` and `svg_from_base58` functions  
+2. size parameter `halfsize` of final file (created image is square, with ``halfsize`*2+1`` pixels side for png and ``halfsize`*2`` for svg)  
+
+
+## Input needed to make files (at the moment, mainly for test pics)  
 
 Input requires:  
 
