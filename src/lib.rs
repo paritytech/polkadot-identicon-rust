@@ -11,7 +11,7 @@ use circles::{calculate_png_data, calculate_svg_data};
 
 
 /// generate png data in u8 vector format, from id as u8 vector
-pub fn png_data_from_vec (into_id: &Vec<u8>, halfsize_in_pixels: i32) -> anyhow::Result<Vec<u8>> {
+pub fn png_data_from_vec (into_id: &Vec<u8>, halfsize_in_pixels: i32) -> Result<Vec<u8>, png::EncodingError> {
     
     let mut out: Vec<u8> = Vec::new();
     
@@ -19,25 +19,22 @@ pub fn png_data_from_vec (into_id: &Vec<u8>, halfsize_in_pixels: i32) -> anyhow:
     encoder.set_color(png::ColorType::RGBA);
     encoder.set_depth(png::BitDepth::Eight);
     
-    let mut writer = match encoder.write_header() {
-        Ok(x) => x,
-        Err(e) => return Err(anyhow!("Error writing header. {}", e)),
-    };
+    let mut writer = encoder.write_header()?;
     
     let colors = get_colors_from_vec(&into_id);
     let data = calculate_png_data (halfsize_in_pixels, colors);
     
-    match writer.write_image_data(&data) {
-        Ok(()) => (),
-        Err(e) => return Err(anyhow!("Error writing image data. {}", e)),
-    };
+    writer.write_image_data(&data)?;
     drop(writer);
     Ok(out)
 }
 
 /// plot png icon from id as u8 vector
 pub fn plot_png_from_vec (into_id: &Vec<u8>, halfsize_in_pixels: i32, filename: &str) -> anyhow::Result<()> {
-    let content = png_data_from_vec(into_id, halfsize_in_pixels)?;
+    let content = match png_data_from_vec(into_id, halfsize_in_pixels) {
+        Ok(a) => a,
+        Err(e) => return Err(anyhow!("Png encoding error. {}", e)),
+    };
     match std::fs::write(filename, &content) {
         Ok(()) => Ok(()),
         Err(e) => return Err(anyhow!("Error writing file. {}", e)),
@@ -68,13 +65,19 @@ pub fn plot_svg_from_vec (into_id: &Vec<u8>, halfsize: i32, filename: &str) -> a
 /// generate png data in u8 vector format, with hex line input
 pub fn png_data_from_hex (hex_line: &str, halfsize_in_pixels: i32) -> anyhow::Result<Vec<u8>> {
     let into_id = unhex(hex_line)?;
-    png_data_from_vec (&into_id, halfsize_in_pixels)
+    match png_data_from_vec (&into_id, halfsize_in_pixels) {
+        Ok(a) => Ok(a),
+        Err(e) => return Err(anyhow!("Png encoding error. {}", e)),
+    }
 }
 
 /// plot png icon, with hex line input
 pub fn plot_png_from_hex (hex_line: &str, halfsize_in_pixels: i32, filename: &str) -> anyhow::Result<()> {
     let into_id = unhex(hex_line)?;
-    plot_png_from_vec (&into_id, halfsize_in_pixels, filename)
+    match plot_png_from_vec (&into_id, halfsize_in_pixels, filename) {
+        Ok(()) => Ok(()),
+        Err(e) => return Err(anyhow!("Png encoding error. {}", e)),
+    }
 }
 
 /// generate svg::Document, with hex line input
@@ -92,13 +95,19 @@ pub fn plot_svg_from_hex (hex_line: &str, halfsize: i32, filename: &str) -> anyh
 /// generate png data in u8 vector format, with base58 line input
 pub fn png_data_from_base58 (base58_line: &str, halfsize_in_pixels: i32) -> anyhow::Result<Vec<u8>> {
     let into_id = unbase(base58_line)?;
-    png_data_from_vec (&into_id, halfsize_in_pixels)
+    match png_data_from_vec (&into_id, halfsize_in_pixels) {
+        Ok(a) => Ok(a),
+        Err(e) => return Err(anyhow!("Png encoding error. {}", e)),
+    }
 }
 
 /// plot png icon, with base58 line input
 pub fn plot_png_from_base58 (base58_line: &str, halfsize_in_pixels: i32, filename: &str) -> anyhow::Result<()> {
     let into_id = unbase(base58_line)?;
-    plot_png_from_vec (&into_id, halfsize_in_pixels, filename)
+    match plot_png_from_vec (&into_id, halfsize_in_pixels, filename) {
+        Ok(()) => Ok(()),
+        Err(e) => return Err(anyhow!("Png encoding error. {}", e)),
+    }
 }
 
 /// generate svg::Document, with hex line input
