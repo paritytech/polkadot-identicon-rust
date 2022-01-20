@@ -1,10 +1,13 @@
 [package]
+description = "rust port of identicon generator for polkadot from polkadot.js"
+license = "Apache-2.0"
 name = "plot_icon"
 version = "0.1.2"
-authors = ["vera"]
+authors = ["Alexander Slesarev <slesarew@gmail.com>"]
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+repository = "https://github.com/paritytech/polkadot-identicon-rust"
+homepage = "https://github.com/paritytech/polkadot-identicon-rust"
+keywords = ["identicon", "icon", "parity", "polkadot", "substrate"]
 
 [dependencies]
 hex = "0.4.3"
