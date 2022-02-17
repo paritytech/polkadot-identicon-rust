@@ -2,6 +2,7 @@ use png;
 use svg::Document;
 use base58::FromBase58;
 use anyhow::anyhow;
+use image::imageops::{FilterType, resize};
 
 mod colors;
 use colors::get_colors_from_vec;
@@ -28,6 +29,28 @@ pub fn png_data_from_vec (into_id: &Vec<u8>, halfsize_in_pixels: i32) -> Result<
     drop(writer);
     Ok(out)
 }
+
+pub fn png_data_scaled (into_id: &Vec<u8>, halfsize_in_pixels: i32) -> Result<Vec<u8>, png::EncodingError> {
+    
+    let data_large = png_data_from_vec(into_id, halfsize_in_pixels*10)?;
+    let image_large = image::load_from_memory(&data_large).unwrap();
+    let image_small = resize(&image_large, (halfsize_in_pixels*2+1) as u32, (halfsize_in_pixels*2+1) as u32, FilterType::Gaussian);
+    
+    let data = image_small.to_vec();
+    
+    let mut out: Vec<u8> = Vec::new();
+    let mut encoder = png::Encoder::new(&mut out, (halfsize_in_pixels*2+1) as u32, (halfsize_in_pixels*2+1) as u32);
+    encoder.set_color(png::ColorType::RGBA);
+    encoder.set_depth(png::BitDepth::Eight);
+    
+    let mut writer = encoder.write_header()?;
+    
+    writer.write_image_data(&data)?;
+    drop(writer);
+    Ok(out)
+    
+}
+
 
 /// plot png icon from id as u8 vector
 pub fn plot_png_from_vec (into_id: &Vec<u8>, halfsize_in_pixels: i32, filename: &str) -> anyhow::Result<()> {
