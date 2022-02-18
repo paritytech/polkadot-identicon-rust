@@ -52,12 +52,12 @@ fn default_schemes() -> Vec<SchemeElement> {
 }
 
 /// Function to get colors from u8 vector
-pub fn get_colors_from_vec (into_id: &Vec<u8>) -> Vec<[u8; 4]> {
+pub fn get_colors_from_vec (into_id: &[u8]) -> Vec<[u8; 4]> {
 
-    let into_zero = [0u8; 32].to_vec();
-    let zero = blake2b(64, &[], &into_zero).as_bytes().to_vec();
+    let into_zero = &[0u8; 32];
+    let zero = blake2b(64, &[], into_zero).as_bytes().to_vec();
     
-    let id_prep = blake2b(64, &[], &into_id).as_bytes().to_vec();
+    let id_prep = blake2b(64, &[], into_id).as_bytes().to_vec();
 
     let mut id: Vec<u8> = Vec::new();
     for (i, x) in id_prep.iter().enumerate() {
@@ -127,7 +127,7 @@ pub fn get_colors_from_vec (into_id: &Vec<u8>) -> Vec<[u8; 4]> {
 // in current setting is always 357
     let mut total = 0;
     for x in schemes.iter() {
-        total = total+x.freq as u32;
+        total += x.freq as u32;
     }
 
 // `d` is used to determine the coloring scheme to be used.
@@ -167,7 +167,7 @@ fn choose_scheme (schemes: Vec<SchemeElement>, d: u32) -> anyhow::Result<SchemeE
     let mut sum = 0;
     let mut found_scheme = None;
     for x in schemes.into_iter() {
-        sum = sum + x.freq as u32;
+        sum += x.freq as u32;
         if d < sum {
             found_scheme = Some(x);
             break;
@@ -183,11 +183,9 @@ fn choose_scheme (schemes: Vec<SchemeElement>, d: u32) -> anyhow::Result<SchemeE
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hex;
-    use base58::FromBase58;
     
-    const HEX_ALICE: &str = "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d";
-    const BASE58_ALICE: &str = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
+    const ALICE: &[u8] = &[212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125]; // Alice public key; corresponds to hexadecimal "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d" and base58 "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" in westend network
+    const BOB: &[u8] = &[142, 175, 4, 21, 22, 135, 115, 99, 38, 201, 254, 161, 126, 37, 252, 82, 135, 97, 54, 147, 201, 18, 144, 156, 178, 38, 170, 71, 148, 242, 106, 72]; // Bob public key; corresponds to hexadecimal "8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48" and base58 "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty" in westend network
 
 /// made with a color picking GIMP tool using the icon from polkadot website
     fn alice_website() -> Vec<[u8; 4]> {
@@ -213,9 +211,6 @@ mod tests {
             [61, 39, 139, 255],
         ]
     }
-    
-    const HEX_BOB: &str = "8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48";
-    const BASE58_BOB: &str = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty";
 
 /// made with a color picking GIMP tool using the icon from polkadot website
     fn bob_website() -> Vec<[u8; 4]> {
@@ -243,36 +238,15 @@ mod tests {
     }
 
     #[test]
-    fn can_plot_alice_hex() {
-        let alice_unhex = hex::decode(HEX_ALICE).unwrap();
-        let alice_calculated = get_colors_from_vec(&alice_unhex);
-        assert!(alice_website() == alice_calculated, "Error in colors for Alice in hex");
+    fn colors_alice() {
+        let alice_calculated = get_colors_from_vec(ALICE);
+        assert!(alice_website() == alice_calculated, "Got different Alice colors:\n{:?}", alice_calculated);
     }
-    
+
     #[test]
-    fn can_plot_alice_base58() {
-        let alice_unbase_prep = BASE58_ALICE.from_base58().unwrap();
-        let alice_unbase = alice_unbase_prep[1..alice_unbase_prep.len()-2].to_vec(); // cut off base58 prefix and last two units that are part of the hash
-        let alice_unhex = hex::decode(HEX_ALICE).unwrap();
-        assert!(alice_unbase == alice_unhex, "Base58 calculations error:\n{:?}\n{:?}", alice_unbase, alice_unhex);
-        let alice_calculated = get_colors_from_vec(&alice_unbase);
-        assert!(alice_website() == alice_calculated, "Error in colors for Alice in base58");
+    fn colors_bob() {
+        let bob_calculated = get_colors_from_vec(BOB);
+        assert!(bob_website() == bob_calculated, "Got different Bob colors:\n{:?}", bob_calculated);
     }
-    
-    #[test]
-    fn can_plot_bob_hex() {
-        let bob_unhex = hex::decode(HEX_BOB).unwrap();
-        let bob_calculated = get_colors_from_vec(&bob_unhex);
-        assert!(bob_website() == bob_calculated, "Error in colors for Bob in hex");
-    }
-    
-    #[test]
-    fn can_plot_bob_base58() {
-        let bob_unbase_prep = BASE58_BOB.from_base58().unwrap();
-        let bob_unbase = bob_unbase_prep[1..bob_unbase_prep.len()-2].to_vec(); // cut off base58 prefix and last two units that are part of the hash
-        let bob_unhex = hex::decode(HEX_BOB).unwrap();
-        assert!(bob_unbase == bob_unhex, "Base58 calculations error:\n{:?}\n{:?}", bob_unbase, bob_unhex);
-        let bob_calculated = get_colors_from_vec(&bob_unbase);
-        assert!(bob_website() == bob_calculated, "Error in colors for Bob in base58");
-    }
+
 }

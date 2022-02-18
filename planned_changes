@@ -1,0 +1,6 @@
+[] optionally switch all calculations to f64 to avoid too early rounding - f64 calculation is a must for svg, but is an option, and not default one, for png. integers are not always available
+[] fix pixelation with rescaling, several modes of rescaling and a default are available
+[] move trivial examples into examples
+[] svg into separate feature
+[] example dependencies into dev-dependencies
+[] update readme

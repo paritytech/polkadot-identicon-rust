@@ -49,3 +49,22 @@ For example, calculated HSL color saturation could range 30..109, and is process
 
 See details in code comments.  
 
+
+## Small identicons  
+
+Signer uses images in .png format, since .svg format is not sufficiently supported on devices side. Hopefully this change at some point, however, for the time being .svg remains an optional feature, and this crate sticks mostly to .png generation.  
+For use in Signer, the .png identicons produced should be, obviously, quite small (at the moment, 16 pix halfsize and device-independent).  
+
+As .png images are generated pixel-by-pixel, each pixel color is decided based on calculations in integer values, and in small-sized images, such as 16 pix target halfsize, the image main features (small colored circles) disappear entirely.  
+
+One possible solution to this is to calculate in floats, and only then transform into integers. With small identicons the images have the colored dots, but are strongly pixelated.  
+
+Possible solution is to generate larger identicon and then scale it down in frontend, but it was noticed that the scaling results (pixelation, color even distribution) are device-dependent and although a minor thing, it should definitely be avoided in *identicon*.  
+
+To keep the rescaling within this crate, a larger .png is generated (scaling factor could be set up by user, default is 8), and then scaled down to original desired size using `image` crate function `resize` with a filter ([`FilterType`](https://docs.rs/image/latest/image/imageops/enum.FilterType.html) could be set up by user, default is CatmullRom). All filters produce reasonable results, except `FilterType::Nearest` that results in substantially distorted image and is therefore not recommended.  
+
+The scaling approach seems to make some visible difference only for small identicon pictures (below 100 pix halfsize). For larger identicons `png_data` produces reasonable results without rescaling tricks.  
+
+To generate the small identicon with default scaling parameters, use `png_data_scaled_default`. It inputs only `&[u8]` data (the one that should be drawn as identicon) and image halfsize in pixels. It outputs png data as `Vec<u8>`. Printing the data into .png file could be done `std::fs::write` (see examples).  
+
+To generate the small identicon with custom scaling parameters, use `png_data_scaled_custom`, with custom scaling factor and filter type (see examples).  
