@@ -11,17 +11,19 @@ const ALICE_HEX: &str = "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e
 const ALICE_BASE58: &str = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
 
 
-/// # Generating large identicon (without scaling)
+/// # Generating an identicon without scaling
 /// Start with base58 string for public key,
-/// generate and print identicon with halfsize 256.
-/// Identicon is sufficiently large to look acceptable without rescaling.
-fn plot_large_png_identicon_alice() {
+/// generate and print identicon with varying halfsize.
+/// Identicon with sufficient halfsize looks acceptable without rescaling.
+fn plot_png_identicon_alice() {
     let unbased = ALICE_BASE58.from_base58().unwrap();
     let alice_data = &unbased[1..unbased.len()-2];
-    let halfsize_in_pixels = 256;
-    let filename = "examples/alice_512pix.png";
-    let content = generate_png(alice_data, halfsize_in_pixels).unwrap();
-    std::fs::write(&filename, &content).unwrap();
+    let halfsize_set: Vec<u16> = vec![8, 16, 32, 64, 128, 256];
+    for halfsize_in_pixels in halfsize_set.into_iter() {
+        let filename = format!("examples/size_set_alice_{}pix.png", 2*halfsize_in_pixels);
+        let content = generate_png(alice_data, halfsize_in_pixels).unwrap();
+        std::fs::write(&filename, &content).unwrap();
+    }
 }
 
 /// # Generating small identicon (with default scaling)
@@ -31,7 +33,7 @@ fn plot_large_png_identicon_alice() {
 /// Identicon looks acceptable.
 fn plot_small_rescaled_png_identicon_alice() {
     let halfsize_in_pixels = 16;
-    let filename = "examples/alice_32pix_default_signer.png";
+    let filename = "examples/default_signer_alice_32pix.png";
     let content = generate_png_scaled_default(ALICE, halfsize_in_pixels).unwrap();
     std::fs::write(&filename, &content).unwrap();
 }
@@ -46,7 +48,7 @@ fn scaling_factor_test() {
     let scaling_set: Vec<u8> = vec![1, 2, 4, 8, 16];
     let halfsize_in_pixels = 16;
     for scaling_factor in scaling_set.into_iter() {
-        let filename = format!("examples/alice_32pix_scaled_{}x_catmullrom.png", scaling_factor);
+        let filename = format!("examples/scaled_{}x_alice_32pix_catmullrom.png", scaling_factor);
         let content = generate_png_scaled_custom (ALICE, halfsize_in_pixels, scaling_factor, filter).unwrap();
         std::fs::write(&filename, &content).unwrap();
     }
@@ -62,7 +64,7 @@ fn filter_test() {
     let scaling_factor = 8;
     let halfsize_in_pixels = 16;
     for filter_bundle in filter_set.into_iter() {
-        let filename = format!("examples/bob_32pix_scaled_8x_{}.png", filter_bundle.1);
+        let filename = format!("examples/file_set_bob_32pix_scaled_8x_{}.png", filter_bundle.1);
         let content = generate_png_scaled_custom (BOB, halfsize_in_pixels, scaling_factor, filter_bundle.0).unwrap();
         std::fs::write(&filename, &content).unwrap();
     }
@@ -80,7 +82,7 @@ fn plot_svg_identicon_alice() {
 }
 
 fn main() {
-    plot_large_png_identicon_alice(); // Making large png file (without rescaling)
+    plot_png_identicon_alice(); // Making large png file (without rescaling)
     plot_small_rescaled_png_identicon_alice(); // Making small png file (with default scaling)
     scaling_factor_test(); // Testing different scaling factors
     filter_test(); // Testing different filter types

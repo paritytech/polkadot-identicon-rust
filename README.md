@@ -68,3 +68,5 @@ The scaling approach seems to make some visible difference only for small identi
 To generate the small identicon with default scaling parameters, use `png_data_scaled_default`. It inputs only `&[u8]` data (the one that should be drawn as identicon) and image halfsize in pixels. It outputs png data as `Vec<u8>`. Printing the data into .png file could be done `std::fs::write` (see examples).  
 
 To generate the small identicon with custom scaling parameters, use `png_data_scaled_custom`, with custom scaling factor and filter type (see examples).  
+
+Another issue, especially pronounced for small png images, is off-centering in images with even number of pixels sides. Rescaling compensates for this effect greatly.  
