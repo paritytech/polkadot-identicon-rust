@@ -7,7 +7,7 @@ This is a lib crate for generating standard 19-circle icons in png and in svg fo
 
 Output is `Vec<u8>` png data, or `svg::Document` with svg data, both could be easily printed into files.  
 
-The identicon color scheme and elements arrangement follow the published javascript [code](`https://github.com/paritytech/oo7/blob/master/packages/polkadot-identicon/src/index.jsx`) for polkadot identicon generation. This crate is intended mainly for use by [Signer](https://github.com/paritytech/parity-signer).  
+The identicon color scheme and elements arrangement follow the published javascript [code](https://github.com/paritytech/oo7/blob/master/packages/polkadot-identicon/src/index.jsx) for polkadot identicon generation. This crate is intended mainly for use by [Signer](https://github.com/paritytech/parity-signer).  
 
 
 ## Input
