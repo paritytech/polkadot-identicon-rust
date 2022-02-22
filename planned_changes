@@ -1,6 +1,0 @@
-[x] switch all calculations to f64 to avoid too early rounding
-[x] fix pixelation with rescaling, several modes of rescaling and a default are available
-[x] remove trivial examples, add normal examples
-[ ] svg into separate feature
-[ ] update readme
-[x] docs
