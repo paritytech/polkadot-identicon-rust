@@ -51,8 +51,9 @@ fn default_schemes() -> Vec<SchemeElement> {
     ]
 }
 
-/// Function to calculate identicon colors from `&[u8]` input slice
-pub fn get_colors(into_id: &[u8]) -> Vec<[u8; 4]> {
+/// Function to calculate identicon colors from `&[u8]` input slice.
+/// Total 19 colors are always produced.
+pub fn get_colors(into_id: &[u8]) -> [[u8; 4]; 19] {
     let into_zero = &[0u8; 32];
     let zero = blake2b(64, &[], into_zero).as_bytes().to_vec();
 
@@ -154,7 +155,7 @@ pub fn get_colors(into_id: &[u8]) -> Vec<[u8; 4]> {
         my_colors.push(color);
     }
 
-    my_colors
+    my_colors.try_into().expect("always generate 19-element set")
 }
 
 /// Function to choose the coloring scheme based on value d.

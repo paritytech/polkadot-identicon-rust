@@ -120,7 +120,7 @@ pub fn position_circle_set(a: f32) -> Vec<CirclePosition> {
 fn get_colored_circles(
     center_to_center: f32,
     small_radius: f32,
-    colors: Vec<[u8; 4]>,
+    colors: [[u8; 4]; 19],
 ) -> Vec<Circle> {
     let positions = position_circle_set(center_to_center);
     let mut out: Vec<Circle> = Vec::with_capacity(19);
@@ -143,7 +143,7 @@ fn get_colored_circles(
 /// Requires image size in pixels (equal to diameter of largest, outer circle),
 /// and identicon colors
 #[cfg(feature = "pix")]
-pub fn calculate_png_data(size_in_pixels: u16, colors: Vec<[u8; 4]>) -> Vec<u8> {
+pub fn calculate_png_data(size_in_pixels: u16, colors: [[u8; 4]; 19]) -> Vec<u8> {
     let mut data: Vec<u8> = Vec::new();
     let big_radius = size_in_pixels as f32 / 2.0;
     let small_radius = big_radius / 32.0 * 5.0;
@@ -193,7 +193,7 @@ pub fn calculate_png_data(size_in_pixels: u16, colors: Vec<[u8; 4]>) -> Vec<u8> 
 ///
 /// Inputs radius of outer circle (largest one) and identicon colors
 #[cfg(feature = "vec")]
-pub fn calculate_svg_data(big_radius: f32, colors: Vec<[u8; 4]>) -> Vec<element::Circle> {
+pub fn calculate_svg_data(big_radius: f32, colors: [[u8; 4]; 19]) -> Vec<element::Circle> {
     let mut out: Vec<element::Circle> = Vec::with_capacity(20);
     out.push(
         element::Circle::new()

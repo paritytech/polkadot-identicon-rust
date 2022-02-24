@@ -4,6 +4,7 @@
 ## Overview
 
 This is a lib crate for generating standard 19-circle icons in png and in svg format.  
+![identicon](./src/identicon_example.svg)
 
 Output is `Vec<u8>` png data, or `svg::Document` with svg data, both could be easily printed into files.  
 
@@ -16,6 +17,8 @@ Identicon is generated for `&[u8]` input slice. During identicon generation, thi
 
 Typical input slice is a public key. Public key is often encountered as a hexadecimal string (`d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d`) or as a base58 network-specific string (`5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY`), both could be easily transformed into `&[u8]` input.  
 
+Crate also supports generation of identicon-like images with user-provided colors in RGBA format.  
+
 
 ## PNG
 
@@ -26,7 +29,7 @@ Function `generate_png` produces png data for identicon, and requires:
 - target image size in pixels (`u16`)  
 Png images are generated pixel-by-pixel, and the quality of final image is determined by the image size. Each png pixel (with integer coordinates) falling within the identicon circle element (with float circle parameters) gets the color of the circle. Below certain image size (approximately 100 pix) the circles become too pixelated. Also, images with even number of pixels size are off-centered by a pixel.  
 
-Signer needs small png identicon icons. Exact parameters are yet TBD (at the moment, identicons are 32 pix and device-independent), however, the straightforward approach with `generate_png` does not produce acceptable results.  
+Signer needs small png identicon icons. Exact parameters are yet TBD (at the moment, identicons are 30 pix and device-independent), however, the straightforward approach with `generate_png` does not produce acceptable results.  
 
 Possible solution is to generate larger identicon and then scale it down in Signer frontend, but it was noticed that the scaling results (pixelation, color distribution) are device-dependent and although a minor thing, it should definitely be avoided in *identicon*.  
 
@@ -38,20 +41,31 @@ Function `generate_png_scaled_custom` performs the scaling with custom parameter
 - scaling factor (`u8`), how much larger the larger png actually is  
 - filter ([`FilterType`](https://docs.rs/image/latest/image/imageops/enum.FilterType.html)) used for image resize  
 
-The scaling factor reasonable values are in range `[4..=10]`, below it the pixelation persists, above it the images are not visibly improving anymore.  
+The scaling factor reasonable values are in range `[4..=8]`, below it the pixelation persists, above it the images are not visibly improving anymore, and may even seem blurry.  
 
-All filters produce reasonable results, except `FilterType::Nearest` that results in visibly distorted image and therefore is not recommended.  
+All filters produce reasonable results, except `FilterType::Nearest` that yields visibly distorted images and therefore is not recommended.  
 
-Function `generate_png_scaled_default` performs the scaling with default scaling parameters (scaling factor `8` and filter `FilterType::CatmullRom`), and requires:  
+Function `generate_png_scaled_default` performs the scaling with default scaling parameters (scaling factor `5` and filter `FilterType::Lanczos3`) for image with default Signer identicon size (30 pix), and requires only:  
 - `&[u8]` slice  
+
+Function `generate_png_with_colors` is similar to `generate_png`, but accepts identicon colors directly, and does not generate color set itself. This is intended mainly for tests. Function `generate_png_with_colors` requires:  
+- `[[u8; 4]; 19]` 19-element set of colors in RGBA format  
+- target image size in pixels (`u16`)  
+
+Function `generate_png_scaled_custom_with_colors` is similar to `generate_png_scaled_custom`, but accepts identicon colors directly, and does not generate color set itself. This is intended mainly for tests. Function `generate_png_scaled_custom_with_colors` requires:  
+- `[[u8; 4]; 19]` 19-element set of colors in RGBA format  
 - target identicon size in pixels (`u8`)  
+- scaling factor (`u8`)  
+- filter ([`FilterType`](https://docs.rs/image/latest/image/imageops/enum.FilterType.html)) used for image resize  
 
 
 ## SVG
 
-Feature `"vec"` (enabled by default) enables generation of identicon pictures in svg format (function `generate_svg`).  
+Feature `"vec"` (enabled by default) enables infallible generation of identicon pictures in svg format. Since svg is a vector format, no image size parameters are needed.
 
-Since svg is a vector format, no image size parameters are needed, and the identicon is produced infallably from `&[u8]` input slice.  
+Function `generate_svg` reqires only `&[u8]` input slice.  
+
+Function `generate_svg_with_colors` uses pre-set colors and is intended mainly for tests. It requires only the color set (`[[u8; 4]; 19]` 19-element set of colors in RGBA format).  
 
 
 ## Tests and Examples
