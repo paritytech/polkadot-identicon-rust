@@ -28,7 +28,7 @@ const SCALING_FACTOR: u8 = 5;
 #[cfg(feature = "pix")]
 const FILTER_TYPE: FilterType = FilterType::Lanczos3;
 #[cfg(feature = "pix")]
-const ERROR_PNG: &[u8] = &[137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 30, 0, 0, 0, 30, 8, 6, 0, 0, 0, 59, 48, 174, 162, 0, 0, 0, 46, 73, 68, 65, 84, 120, 156, 237, 205, 65, 1, 0, 32, 12, 0, 33, 237, 31, 122, 182, 56, 31, 131, 2, 220, 153, 57, 63, 136, 51, 226, 140, 56, 35, 206, 136, 51, 226, 140, 56, 35, 206, 136, 51, 251, 226, 7, 36, 207, 89, 197, 10, 134, 29, 92, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]; // static 30x30 transparent png, for rare cases when the identicon generation fails
+pub const EMPTY_PNG: &[u8] = &[137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 30, 0, 0, 0, 30, 8, 6, 0, 0, 0, 59, 48, 174, 162, 0, 0, 0, 46, 73, 68, 65, 84, 120, 156, 237, 205, 65, 1, 0, 32, 12, 0, 33, 237, 31, 122, 182, 56, 31, 131, 2, 220, 153, 57, 63, 136, 51, 226, 140, 56, 35, 206, 136, 51, 226, 140, 56, 35, 206, 136, 51, 251, 226, 7, 36, 207, 89, 197, 10, 134, 29, 92, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]; // static 30x30 transparent png, for rare cases when the identicon generation fails
 
 /// Polkadot identicon png data in u8 vector format, from `&[u8]` input slice
 ///
@@ -276,7 +276,7 @@ pub fn generate_png_scaled_custom_with_colors(
 pub fn generate_png_scaled_default(into_id: &[u8]) -> Vec<u8> {
     match generate_png_scaled_custom(into_id, SIZE_IN_PIXELS, SCALING_FACTOR, FILTER_TYPE) {
         Ok(a) => a,
-        Err(_) => ERROR_PNG.to_vec(),
+        Err(_) => EMPTY_PNG.to_vec(),
     }
 }
 
