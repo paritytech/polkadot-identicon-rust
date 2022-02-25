@@ -47,6 +47,7 @@ All filters produce reasonable results, except `FilterType::Nearest` that yields
 
 Function `generate_png_scaled_default` performs the scaling with default scaling parameters (scaling factor `5` and filter `FilterType::Lanczos3`) for image with default Signer identicon size (30 pix), and requires only:  
 - `&[u8]` slice  
+If somehow the generation of the identicon fails, function outputs default-sized (30x30) transparent png image, i.e. it never produces an error.  
 
 Function `generate_png_with_colors` is similar to `generate_png`, but accepts identicon colors directly, and does not generate color set itself. This is intended mainly for tests. Function `generate_png_with_colors` requires:  
 - `[[u8; 4]; 19]` 19-element set of colors in RGBA format  

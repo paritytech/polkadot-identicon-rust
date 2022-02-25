@@ -27,6 +27,8 @@ const SIZE_IN_PIXELS: u8 = 30;
 const SCALING_FACTOR: u8 = 5;
 #[cfg(feature = "pix")]
 const FILTER_TYPE: FilterType = FilterType::Lanczos3;
+#[cfg(feature = "pix")]
+const ERROR_PNG: &[u8] = &[137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 30, 0, 0, 0, 30, 8, 6, 0, 0, 0, 59, 48, 174, 162, 0, 0, 0, 46, 73, 68, 65, 84, 120, 156, 237, 205, 65, 1, 0, 32, 12, 0, 33, 237, 31, 122, 182, 56, 31, 131, 2, 220, 153, 57, 63, 136, 51, 226, 140, 56, 35, 206, 136, 51, 226, 140, 56, 35, 206, 136, 51, 251, 226, 7, 36, 207, 89, 197, 10, 134, 29, 92, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]; // static 30x30 transparent png, for rare cases when the identicon generation fails
 
 /// Polkadot identicon png data in u8 vector format, from `&[u8]` input slice
 ///
@@ -257,6 +259,7 @@ pub fn generate_png_scaled_custom_with_colors(
 ///
 /// Generates larger image and then scales it down to fit the required size,
 /// with default filter (`FilterType::Lanczos3`) and default scaling factor (`5`).
+/// Function is unfallible. If png generation itself fails, is falls back to transparent 30x30 png.
 ///
 /// ## Example
 ///
@@ -265,13 +268,16 @@ pub fn generate_png_scaled_custom_with_colors(
 ///
 /// let alice: &[u8] = &[212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125];
 /// let filename = "test_pics/default_signer_alice.png";
-/// let content = generate_png_scaled_default(alice).unwrap();
+/// let content = generate_png_scaled_default(alice);
 /// std::fs::write(&filename, &content).unwrap();
 /// ```
 ///
 #[cfg(feature = "pix")]
-pub fn generate_png_scaled_default(into_id: &[u8]) -> Result<Vec<u8>, IdenticonError> {
-    generate_png_scaled_custom(into_id, SIZE_IN_PIXELS, SCALING_FACTOR, FILTER_TYPE)
+pub fn generate_png_scaled_default(into_id: &[u8]) -> Vec<u8> {
+    match generate_png_scaled_custom(into_id, SIZE_IN_PIXELS, SCALING_FACTOR, FILTER_TYPE) {
+        Ok(a) => a,
+        Err(_) => ERROR_PNG.to_vec(),
+    }
 }
 
 /// Helper function to write calculated pixel-by-pixel png data in png format, header and all
