@@ -2,7 +2,7 @@
 description = "rust port of identicon generator for polkadot from polkadot.js"
 license = "Apache-2.0"
 name = "plot_icon"
-version = "0.1.4"
+version = "0.2.0"
 authors = ["Alexander Slesarev <slesarew@gmail.com>", "Vera Abramova <abramova.vera@gmail.com>"]
 edition = "2021"
 repository = "https://github.com/paritytech/polkadot-identicon-rust"

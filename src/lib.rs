@@ -1,13 +1,15 @@
-//! Generates 19-circle identicons in png and in svg format from `&[u8]` input slice. Slice length could be arbitrary, as identicon generation starts with input hashing. Typical input is a public key.  
+//! Generates 19-circle identicons in `png` and in `svg` format from `&[u8]` input slice. Slice length could be arbitrary, as identicon generation starts with input hashing. Typical input is a public key.  
 //!
 //! Identicon example:  
 #![doc=include_str!("identicon_example.svg")]
 //!
 //! The identicon color scheme and elements arrangement follow the published javascript [code](https://github.com/paritytech/oo7/blob/master/packages/polkadot-identicon/src/index.jsx) for polkadot identicon generation. This crate is intended mainly for use by [Signer](https://github.com/paritytech/parity-signer).  
 //!
-//! Crate also supports generation of identicon-like images with pre-set colors in RGB format, mainly for test purposes.  
+//! Crate also supports generation of identicon-like images with pre-set colors in RGBA format, mainly for test purposes.  
 //!
-//! Feature `"pix"` supports generation of png images, feature `"vec"` - generation of svg images. Both are made available by default.  
+//! Feature `"pix"` supports generation of `png` images, feature `"vec"` - generation of `svg` images. Both are made available by default.  
+
+#![deny(unused_crate_dependencies)]
 
 #[cfg(feature = "pix")]
 use image::{
@@ -20,6 +22,7 @@ use svg::Document;
 
 pub mod circles;
 pub mod colors;
+pub use colors::Color;
 
 #[cfg(feature = "pix")]
 const SIZE_IN_PIXELS: u8 = 30;
@@ -28,9 +31,11 @@ const SCALING_FACTOR: u8 = 5;
 #[cfg(feature = "pix")]
 const FILTER_TYPE: FilterType = FilterType::Lanczos3;
 #[cfg(feature = "pix")]
-pub const EMPTY_PNG: &[u8] = &[137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 30, 0, 0, 0, 30, 8, 6, 0, 0, 0, 59, 48, 174, 162, 0, 0, 0, 46, 73, 68, 65, 84, 120, 156, 237, 205, 65, 1, 0, 32, 12, 0, 33, 237, 31, 122, 182, 56, 31, 131, 2, 220, 153, 57, 63, 136, 51, 226, 140, 56, 35, 206, 136, 51, 226, 140, 56, 35, 206, 136, 51, 251, 226, 7, 36, 207, 89, 197, 10, 134, 29, 92, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]; // static 30x30 transparent png, for rare cases when the identicon generation fails
+/// Static 30x30 transparent `png`, for rare cases when the identicon
+/// generation fails or when the data to generate identicon is unavailable
+pub const EMPTY_PNG: &[u8] = &[137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 30, 0, 0, 0, 30, 8, 6, 0, 0, 0, 59, 48, 174, 162, 0, 0, 0, 46, 73, 68, 65, 84, 120, 156, 237, 205, 65, 1, 0, 32, 12, 0, 33, 237, 31, 122, 182, 56, 31, 131, 2, 220, 153, 57, 63, 136, 51, 226, 140, 56, 35, 206, 136, 51, 226, 140, 56, 35, 206, 136, 51, 251, 226, 7, 36, 207, 89, 197, 10, 134, 29, 92, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
 
-/// Polkadot identicon png data in u8 vector format, from `&[u8]` input slice
+/// Polkadot identicon `png` data in `u8` vector format, from `&[u8]` input slice
 ///
 /// Input slice could be of any length, as it gets hashed anyways;
 /// typical input is a public key.
@@ -47,11 +52,9 @@ pub const EMPTY_PNG: &[u8] = &[137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73,
 /// use plot_icon::generate_png;
 ///
 /// let alice: &[u8] = &[212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125];
-/// let size_set: Vec<u16> = vec![16, 32, 45, 64, 128, 256, 512];
+/// let size_set = [16, 32, 45, 64, 128, 256, 512];
 /// for size_in_pixels in size_set.into_iter() {
-///     let filename = format!("test_pics/size_set_alice_{}pix.png", size_in_pixels);
 ///     let content = generate_png(alice, size_in_pixels).unwrap();
-///     std::fs::write(&filename, &content).unwrap();
 ///     let image = load_from_memory(&content).unwrap();
 ///     assert!(image.width() == size_in_pixels as u32);
 ///     assert!(image.height() == size_in_pixels as u32);
@@ -63,34 +66,32 @@ pub fn generate_png(into_id: &[u8], size_in_pixels: u16) -> Result<Vec<u8>, png:
     generate_png_with_colors(colors, size_in_pixels)
 }
 
-/// Polkadot identicon png data in u8 vector format, with given colors
+/// Polkadot identicon `png` data in `u8` vector format, with given colors
 ///
 /// Makes regular identicons if properly generated color set is plugged in.
 /// Also could be used to generate test identicon-like pictures.
 ///
-/// Input color set is in RBGA format.
+/// Input [`Color`] set is in RGBA format.
 ///
 /// ## Example
 ///
 /// Make identicon with gray circles.
-/// Such identicon-like image could be used as constant for rare cases when real png identicon failed to generate.
+/// Such identicon-like image could be used as constant for rare cases when real `png` identicon failed to generate.
 ///
 /// ```
-/// use plot_icon::generate_png_with_colors;
+/// use plot_icon::{generate_png_with_colors, colors::Color};
 ///
-/// let colors = [[200, 200, 200, 255]; 19];
+/// let colors = [Color{red: 200, green: 200, blue: 200, alpha: 255}; 19];
 /// let size_in_pixels = 250;
-/// let filename = "test_pics/gray_identicon_250pix.png";
 /// let content = generate_png_with_colors(colors, size_in_pixels).unwrap();
-/// std::fs::write(filename, &content).unwrap();
 /// ```
 #[cfg(feature = "pix")]
-pub fn generate_png_with_colors(colors: [[u8; 4]; 19], size_in_pixels: u16) -> Result<Vec<u8>, png::EncodingError> {
+pub fn generate_png_with_colors(colors: [Color; 19], size_in_pixels: u16) -> Result<Vec<u8>, png::EncodingError> {
     let data = circles::calculate_png_data(size_in_pixels, colors);
     make_png_from_data(&data, size_in_pixels)
 }
 
-/// Data for small-sized identicon png, from `&[u8]` input slice,
+/// Data for small-sized identicon `png`, from `&[u8]` input slice,
 /// larger image is generated first and then scaled down to fit the required size
 ///
 /// Input slice could be of any length, as it gets hashed anyways;
@@ -115,9 +116,7 @@ pub fn generate_png_with_colors(colors: [[u8; 4]; 19], size_in_pixels: u16) -> R
 /// let size_in_pixels = 32;
 /// let filter = FilterType::CatmullRom;
 /// for scaling_factor in 1..=16 {
-///     let filename = format!("test_pics/scaled_{}x_alice_32pix_catmullrom.png", scaling_factor);
 ///     let content = generate_png_scaled_custom (alice, size_in_pixels, scaling_factor, filter).unwrap();
-///     std::fs::write(&filename, &content).unwrap();
 /// }
 /// ```
 /// For image size 32, the `scaling_factor = 1` results in strongly pixelated image,
@@ -140,19 +139,17 @@ pub fn generate_png_with_colors(colors: [[u8; 4]; 19], size_in_pixels: u16) -> R
 /// use plot_icon::generate_png_scaled_custom;
 ///
 /// let bob: &[u8] = &[142, 175, 4, 21, 22, 135, 115, 99, 38, 201, 254, 161, 126, 37, 252, 82, 135, 97, 54, 147, 201, 18, 144, 156, 178, 38, 170, 71, 148, 242, 106, 72];
-/// let filter_set: Vec<(FilterType, &str)> = vec![
-///     (FilterType::Nearest, "nearest"),
-///     (FilterType::Triangle, "triangle"),
-///     (FilterType::CatmullRom, "catmullrom"),
-///     (FilterType::Gaussian, "gaussian"),
-///     (FilterType::Lanczos3, "lanczos3")
+/// let filter_set = [
+///     FilterType::Nearest,
+///     FilterType::Triangle,
+///     FilterType::CatmullRom,
+///     FilterType::Gaussian,
+///     FilterType::Lanczos3,
 /// ];
 /// let scaling_factor = 8;
 /// let size_in_pixels = 32;
-/// for filter_bundle in filter_set.into_iter() {
-///     let filename = format!("test_pics/file_set_bob_32pix_scaled_8x_{}.png", filter_bundle.1);
-///     let content = generate_png_scaled_custom (bob, size_in_pixels, scaling_factor, filter_bundle.0).unwrap();
-///     std::fs::write(&filename, &content).unwrap();
+/// for filter in filter_set.into_iter() {
+///     let content = generate_png_scaled_custom (bob, size_in_pixels, scaling_factor, filter).unwrap();
 /// }
 /// ```
 /// All identicons are readable,
@@ -173,26 +170,24 @@ pub fn generate_png_with_colors(colors: [[u8; 4]; 19], size_in_pixels: u16) -> R
 ///
 /// let alice: &[u8] = &[212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125];
 /// let bob: &[u8] = &[142, 175, 4, 21, 22, 135, 115, 99, 38, 201, 254, 161, 126, 37, 252, 82, 135, 97, 54, 147, 201, 18, 144, 156, 178, 38, 170, 71, 148, 242, 106, 72];
-/// let filter_set: Vec<(FilterType, &str)> = vec![
-///     (FilterType::Nearest, "nearest"),
-///     (FilterType::Triangle, "triangle"),
-///     (FilterType::CatmullRom, "catmullrom"),
-///     (FilterType::Gaussian, "gaussian"),
-///     (FilterType::Lanczos3, "lanczos3")
+/// let filter_set = [
+///     FilterType::Nearest,
+///     FilterType::Triangle,
+///     FilterType::CatmullRom,
+///     FilterType::Gaussian,
+///     FilterType::Lanczos3,
 /// ];
 /// let size_in_pixels = 30;
 /// for i in 2..=10 {
-///     for (filter, filter_name) in filter_set.iter() {
-///         for (id_slice, id_name) in [(alice, "alice"), (bob, "bob")].into_iter() {
-///             let filename = format!("test_pics/image_pack_{}_30pix_scaled_{}x_{}.png", id_name, i, filter_name);
+///     for filter in filter_set.iter() {
+///         for id_slice in [alice, bob].into_iter() {
 ///             let content = generate_png_scaled_custom (id_slice, size_in_pixels, i, *filter).unwrap();
-///             std::fs::write(&filename, &content).unwrap();
 ///         }
 ///     }
 /// }
 /// ```
-/// For now the scaling factor is selected to be `5`,
-/// the filter is selected to be `FilterType::Lanczos3`.
+/// For now the default scaling factor is selected to be `5`,
+/// the default filter is selected to be `FilterType::Lanczos3`.
 ///
 #[cfg(feature = "pix")]
 pub fn generate_png_scaled_custom(
@@ -205,39 +200,34 @@ pub fn generate_png_scaled_custom(
     generate_png_scaled_custom_with_colors(colors, size_in_pixels, scaling_factor, filter_type)
 }
 
-/// Data for small-sized identicon png, with given colors,
+/// Data for small-sized identicon `png`, with given colors,
 /// larger image is generated first and then scaled down to fit the required size
 ///
 /// Makes regular identicons if properly generated color set is plugged in.
 /// Also could be used to generate test identicon-like pictures.
 ///
-/// Input color set is in RBGA format.
+/// Input [`Color`] set is in RGBA format.
 ///
 /// Function is expected to be used with image size values approximately 100 pix and below.
 ///
 /// ## Example
 ///
 /// Make identicon with gray circles.
-/// Such identicon-like image could be used as constant for rare cases when real png identicon failed to generate.
 ///
 /// ```
 /// use image::imageops::FilterType;
-/// use plot_icon::generate_png_scaled_custom_with_colors;
+/// use plot_icon::{generate_png_scaled_custom_with_colors, colors::Color};
 ///
-/// let rgb_value_set = [150, 160, 170, 180, 190, 200, 210, 220];
+/// let rgb_value = 150;
 /// let size_in_pixels = 30;
 /// let scaling_factor = 5;
 /// let filter_type = FilterType::Lanczos3;
-/// for rgb_value in rgb_value_set.into_iter() {
-///     let colors = [[rgb_value, rgb_value, rgb_value, 255]; 19];
-///     let filename = format!("test_pics/gray_identicon_{}_30pix_scaled_5x_lanczos3.png", rgb_value);
-///     let content = generate_png_scaled_custom_with_colors(colors, size_in_pixels, scaling_factor, filter_type).unwrap();
-///     std::fs::write(&filename, &content).unwrap();
-/// }
+/// let colors = [Color{red: rgb_value, green: rgb_value, blue: rgb_value, alpha: 255}; 19];
+/// let content = generate_png_scaled_custom_with_colors(colors, size_in_pixels, scaling_factor, filter_type).unwrap();
 /// ```
 #[cfg(feature = "pix")]
 pub fn generate_png_scaled_custom_with_colors(
-    colors: [[u8; 4]; 19],
+    colors: [Color; 19],
     size_in_pixels: u8,
     scaling_factor: u8,
     filter_type: FilterType,
@@ -254,12 +244,12 @@ pub fn generate_png_scaled_custom_with_colors(
     make_png_from_data(&image_small.to_vec(), size_in_pixels as u16).map_err(IdenticonError::Png)
 }
 
-/// Data for small-sized identicon png, from `&[u8]` input slice,
+/// Data for small-sized identicon `png`, from `&[u8]` input slice,
 /// with default settings used for Signer app
 ///
 /// Generates larger image and then scales it down to fit the required size,
 /// with default filter (`FilterType::Lanczos3`) and default scaling factor (`5`).
-/// Function is unfallible. If png generation itself fails, is falls back to transparent 30x30 png.
+/// Function is unfallible. If `png` generation itself fails, is falls back to transparent 30x30 `png`.
 ///
 /// ## Example
 ///
@@ -269,7 +259,7 @@ pub fn generate_png_scaled_custom_with_colors(
 /// let alice: &[u8] = &[212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125];
 /// let filename = "test_pics/default_signer_alice.png";
 /// let content = generate_png_scaled_default(alice);
-/// std::fs::write(&filename, &content).unwrap();
+/// assert!(std::fs::read(&filename).unwrap() == content, "Generated different image for {}!", filename);
 /// ```
 ///
 #[cfg(feature = "pix")]
@@ -280,7 +270,7 @@ pub fn generate_png_scaled_default(into_id: &[u8]) -> Vec<u8> {
     }
 }
 
-/// Helper function to write calculated pixel-by-pixel png data in png format, header and all
+/// Helper function to write calculated pixel-by-pixel `png` pixel data in `png` format, header and all
 #[cfg(feature = "pix")]
 fn make_png_from_data(data: &[u8], size_in_pixels: u16) -> Result<Vec<u8>, png::EncodingError> {
     let mut out: Vec<u8> = Vec::new();
@@ -293,18 +283,18 @@ fn make_png_from_data(data: &[u8], size_in_pixels: u16) -> Result<Vec<u8>, png::
     Ok(out)
 }
 
-/// Errors in png identicon generation
+/// Errors in `png` identicon generation
 #[derive(Debug)]
 #[cfg(feature = "pix")]
 pub enum IdenticonError {
     /// [`png::EncodingError`](https://docs.rs/png/latest/png/enum.EncodingError.html)
     ///
-    /// From `png` crate, could appear on writing the pixel data into png,
-    /// generally should not happen, since the png parameters are matching the pixel data generated
+    /// From `png` crate, could appear on writing the pixel data into `png`,
+    /// generally should not happen, since the `png` parameters are matching the pixel data generated
     Png(png::EncodingError),
     /// [`image::ImageError`](https://docs.rs/image/latest/image/error/enum.ImageError.html)
     ///
-    /// From `image` crate, could appear on loading freshly made png into `DynamicImage`,
+    /// From `image` crate, could appear on loading freshly made `png` into `DynamicImage`,
     /// very unlikely
     Image(image::ImageError),
 }
@@ -343,8 +333,9 @@ impl std::fmt::Display for IdenticonError {
 ///
 /// let alice: &[u8] = &[212, 53, 147, 199, 21, 253, 211, 28, 97, 20, 26, 189, 4, 169, 159, 214, 130, 44, 133, 88, 133, 76, 205, 227, 154, 86, 132, 231, 165, 109, 162, 125];
 /// let svg_document = generate_svg (&alice);
-/// let filename = "test_pics/alice.svg";
-/// svg::save(filename, &svg_document).unwrap();
+/// let mut svg_expected_content = String::new();
+/// svg::open("test_pics/alice.svg", &mut svg_expected_content).unwrap();
+/// assert!(svg_document.to_string() == svg_expected_content, "Expected different svg content, got: {}", svg_document);
 /// ```
 #[cfg(feature = "vec")]
 pub fn generate_svg(into_id: &[u8]) -> Document {
@@ -358,20 +349,18 @@ pub fn generate_svg(into_id: &[u8]) -> Document {
 /// Makes regular identicons if properly generated color set is plugged in.
 /// Also could be used to generate test identicon-like pictures.
 ///
-/// Input color set is in RBGA format.
+/// Input [`Color`] set is in RGBA format.
 ///
 /// ## Example
 ///
 /// ```
-/// use plot_icon::generate_svg_with_colors;
+/// use plot_icon::{generate_svg_with_colors, colors::Color};
 ///
-/// let colors = [[200, 200, 200, 255]; 19];
+/// let colors = [Color{red: 200, green: 200, blue: 200, alpha: 255}; 19];
 /// let svg_document = generate_svg_with_colors(colors);
-/// let filename = "test_pics/pre-set_colors.svg";
-/// svg::save(filename, &svg_document).unwrap();
 /// ```
 #[cfg(feature = "vec")]
-pub fn generate_svg_with_colors(colors: [[u8; 4]; 19]) -> Document {
+pub fn generate_svg_with_colors(colors: [Color; 19]) -> Document {
     let unit = 10; // svg is vector format, the unit size is arbitrary, and does not influence the outcome
     let mut document = Document::new().set("viewBox", (-unit, -unit, 2 * unit, 2 * unit));
     let data = circles::calculate_svg_data(unit as f32, colors);

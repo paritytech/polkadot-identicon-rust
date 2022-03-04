@@ -1,17 +1,17 @@
 #[cfg(feature = "vec")]
 use svg::node::element;
 
-#[cfg(feature = "pix")]
-const BACKGROUND_COLOR: [u8; 4] = [255, 255, 255, 0];
-pub(crate) const FOREGROUND_COLOR: [u8; 4] = [238, 238, 238, 255];
+#[cfg(any(feature = "vec", feature = "pix"))]
+use crate::colors::Color;
 
 /// Information about the circle
 #[cfg(feature = "pix")]
+#[derive(Clone, Copy, Debug, PartialEq)]
 struct Circle {
     x_center: f32,
     y_center: f32,
     radius: f32,
-    rgba_color: [u8; 4],
+    rgba_color: Color,
 }
 
 /// Function to determine if the point (x, y) is within the circle
@@ -23,94 +23,95 @@ fn in_circle(x: i32, y: i32, circle: &Circle) -> bool {
 
 /// Information about circle center position
 ///
-/// `position_circle_set` sets default positions for small circles in 19-circle icon 
+/// `position_circle_set` sets default positions for small circles in 19-circles icon 
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct CirclePosition {
     pub x_center: f32,
     pub y_center: f32,
 }
 
-/// Set default positions of small circles in 19-circle icon
+/// Set default positions of small circles in 19-circles icon
 ///
 /// Input is `f32` center-to-center distance between small circles
-pub fn position_circle_set(a: f32) -> Vec<CirclePosition> {
-    let a = a as f32;
-    let b = a * 3f32.sqrt() / 2.0;
-    vec![
+pub fn position_circle_set(center_to_center: f32) -> [CirclePosition; 19] {
+    let a = center_to_center;
+    let b = center_to_center * 3f32.sqrt() / 2f32;
+    [
         CirclePosition {
-            x_center: 0.0,
-            y_center: -2.0 * a,
+            x_center: 0f32,
+            y_center: -2f32 * a,
         },
         CirclePosition {
-            x_center: 0.0,
+            x_center: 0f32,
             y_center: -a,
         },
         CirclePosition {
             x_center: -b,
-            y_center: -3.0 * a / 2.0,
+            y_center: -3f32 * a / 2f32,
         },
         CirclePosition {
-            x_center: -2.0 * b,
+            x_center: -2f32 * b,
             y_center: -a,
         },
         CirclePosition {
             x_center: -b,
-            y_center: -a / 2.0,
+            y_center: -a / 2f32,
         },
         CirclePosition {
-            x_center: -2.0 * b,
-            y_center: 0.0,
+            x_center: -2f32 * b,
+            y_center: 0f32,
         },
         CirclePosition {
-            x_center: -2.0 * b,
+            x_center: -2f32 * b,
             y_center: a,
         },
         CirclePosition {
             x_center: -b,
-            y_center: a / 2.0,
+            y_center: a / 2f32,
         },
         CirclePosition {
             x_center: -b,
-            y_center: 3.0 * a / 2.0,
+            y_center: 3f32 * a / 2f32,
         },
         CirclePosition {
-            x_center: 0.0,
-            y_center: 2.0 * a,
+            x_center: 0f32,
+            y_center: 2f32 * a,
         },
         CirclePosition {
-            x_center: 0.0,
+            x_center: 0f32,
             y_center: a,
         },
         CirclePosition {
             x_center: b,
-            y_center: 3.0 * a / 2.0,
+            y_center: 3f32 * a / 2f32,
         },
         CirclePosition {
-            x_center: 2.0 * b,
+            x_center: 2f32 * b,
             y_center: a,
         },
         CirclePosition {
             x_center: b,
-            y_center: a / 2.0,
+            y_center: a / 2f32,
         },
         CirclePosition {
-            x_center: 2.0 * b,
-            y_center: 0.0,
+            x_center: 2f32 * b,
+            y_center: 0f32,
         },
         CirclePosition {
-            x_center: 2.0 * b,
+            x_center: 2f32 * b,
             y_center: -a,
         },
         CirclePosition {
             x_center: b,
-            y_center: -a / 2.0,
+            y_center: -a / 2f32,
         },
         CirclePosition {
             x_center: b,
-            y_center: -3.0 * a / 2.0,
+            y_center: -3f32 * a / 2f32,
         },
         CirclePosition {
-            x_center: 0.0,
-            y_center: 0.0,
+            x_center: 0f32,
+            y_center: 0f32,
         },
     ]
 }
@@ -120,12 +121,10 @@ pub fn position_circle_set(a: f32) -> Vec<CirclePosition> {
 fn get_colored_circles(
     center_to_center: f32,
     small_radius: f32,
-    colors: [[u8; 4]; 19],
-) -> Vec<Circle> {
+    colors: [Color; 19],
+) -> [Circle; 19] {
     let positions = position_circle_set(center_to_center);
     let mut out: Vec<Circle> = Vec::with_capacity(19);
-    // no checking is done here for positions.len() == 19 and colors.len() == 19;
-    // however, no other length is expected.
     for (i, position) in positions.iter().enumerate() {
         let new = Circle {
             x_center: position.x_center,
@@ -135,25 +134,27 @@ fn get_colored_circles(
         };
         out.push(new);
     }
-    out
+    out.try_into().expect("always generate 19-element set")
 }
 
-/// Calculate png image pixel data (only pixel colors)
+/// Calculate `png` image pixel data (only pixel colors)
+///
+/// Iterates over all `png` image pixels and sets the color.
 ///
 /// Requires image size in pixels (equal to diameter of largest, outer circle),
 /// and identicon colors
 #[cfg(feature = "pix")]
-pub fn calculate_png_data(size_in_pixels: u16, colors: [[u8; 4]; 19]) -> Vec<u8> {
+pub fn calculate_png_data(size_in_pixels: u16, colors: [Color; 19]) -> Vec<u8> {
     let mut data: Vec<u8> = Vec::new();
-    let big_radius = size_in_pixels as f32 / 2.0;
-    let small_radius = big_radius / 32.0 * 5.0;
-    let center_to_center = big_radius / 8.0 * 3.0;
+    let big_radius = size_in_pixels as f32 / 2f32;
+    let small_radius = big_radius / 32f32 * 5f32;
+    let center_to_center = big_radius / 8f32 * 3f32;
 
     let big_circle = Circle {
-        x_center: 0.0,
-        y_center: 0.0,
+        x_center: 0f32,
+        y_center: 0f32,
         radius: big_radius,
-        rgba_color: FOREGROUND_COLOR,
+        rgba_color: Color::foreground(),
     };
 
     let small_circles_set = get_colored_circles(center_to_center, small_radius, colors);
@@ -163,6 +164,7 @@ pub fn calculate_png_data(size_in_pixels: u16, colors: [[u8; 4]; 19]) -> Vec<u8>
         (size_in_pixels >> 1) + (size_in_pixels & 0x01)
     } as i32;
 
+    // calculating color for each pixel
     for y in iter_start..iter_end {
         for x in iter_start..iter_end {
             if in_circle(x, y, &big_circle) {
@@ -174,33 +176,33 @@ pub fn calculate_png_data(size_in_pixels: u16, colors: [[u8; 4]; 19]) -> Vec<u8>
                     }
                 }
                 match some_small_circle {
-                    Some(color) => data.extend_from_slice(&color),
-                    None => data.extend_from_slice(&big_circle.rgba_color),
+                    Some(color) => data.extend_from_slice(&color.to_slice()),
+                    None => data.extend_from_slice(&big_circle.rgba_color.to_slice()),
                 }
             } else {
-                data.extend_from_slice(&BACKGROUND_COLOR)
+                data.extend_from_slice(&Color::background().to_slice())
             }
         }
     }
     data
 }
 
-/// Calculate svg file contents
+/// Calculate `svg` file contents
 ///
 /// Inputs radius of outer circle (largest one) and identicon colors
 #[cfg(feature = "vec")]
-pub fn calculate_svg_data(big_radius: f32, colors: [[u8; 4]; 19]) -> Vec<element::Circle> {
+pub fn calculate_svg_data(big_radius: f32, colors: [Color; 19]) -> Vec<element::Circle> {
     let mut out: Vec<element::Circle> = Vec::with_capacity(20);
     out.push(
         element::Circle::new()
-            .set("cx", 0.0)
-            .set("cy", 0.0)
+            .set("cx", 0f32)
+            .set("cy", 0f32)
             .set("r", big_radius)
-            .set("fill", rgba_to_hex(FOREGROUND_COLOR))
+            .set("fill", Color::foreground().to_hex())
             .set("stroke", "none"),
     );
-    let small_radius = big_radius / 32.0 * 5.0;
-    let center_to_center = big_radius / 8.0 * 3.0;
+    let small_radius = big_radius / 32f32 * 5f32;
+    let center_to_center = big_radius / 8f32 * 3f32;
     let positions = position_circle_set(center_to_center);
     for (i, position) in positions.iter().enumerate() {
         out.push(
@@ -208,19 +210,9 @@ pub fn calculate_svg_data(big_radius: f32, colors: [[u8; 4]; 19]) -> Vec<element
                 .set("cx", position.x_center)
                 .set("cy", position.y_center)
                 .set("r", small_radius)
-                .set("fill", rgba_to_hex(colors[i]))
+                .set("fill", colors[i].to_hex())
                 .set("stroke", "none"),
         );
     }
     out
-}
-
-/// Helper function to transform RGBA [u8; 4] color needed for png into
-/// hex string color needed for svg
-#[cfg(feature = "vec")]
-fn rgba_to_hex(rgba_color: [u8; 4]) -> String {
-    format!(
-        "#{}",
-        hex::encode(vec![rgba_color[0], rgba_color[1], rgba_color[2]])
-    )
 }
