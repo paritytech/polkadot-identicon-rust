@@ -160,8 +160,8 @@ pub fn calculate_png_data(size_in_pixels: u16, colors: [[u8; 4]; 19]) -> Vec<u8>
 
     let iter_start = -(size_in_pixels as i32) / 2;
     let iter_end = {
-        size_in_pixels >> 1 + size_in_pixels & 0x01
-    };
+        (size_in_pixels >> 1) + (size_in_pixels & 0x01)
+    } as i32;
 
     for y in iter_start..iter_end {
         for x in iter_start..iter_end {
