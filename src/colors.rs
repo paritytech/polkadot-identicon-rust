@@ -59,11 +59,12 @@ pub struct Color {
 }
 
 impl Color {
-    /// convert `Color` into slice, for `png` image pixel-by-pixel generation
+    /// convert `Color` into `[u8; 4]` array, for `png` image pixel-by-pixel generation
     #[cfg(feature = "pix")]
-    pub fn to_slice(&self) -> [u8; 4] {
+    pub fn to_array(&self) -> [u8; 4] {
         [self.red, self.green, self.blue, self.alpha]
     }
+
     /// convert `Color` into hex string, for `svg` image generation
     #[cfg(feature = "vec")]
     pub fn to_hex(&self) -> String {
@@ -72,6 +73,7 @@ impl Color {
             hex::encode([self.red, self.green, self.blue])
         )
     }
+
     /// set `Color` to default background, needed only for `png` images
     #[cfg(feature = "pix")]
     pub fn background() -> Self {
@@ -82,6 +84,7 @@ impl Color {
             alpha: 0,
         }
     }
+
     /// set `Color` to default color of the large circle enclosing the small ones
     pub fn foreground() -> Self {
         Self {
@@ -91,6 +94,7 @@ impl Color {
             alpha: 255,
         }
     }
+
     /// function to derive color from `u8` number and saturation component
     /// calculated elsewhere;
     /// is accessible and used only for `u8` numbers other than 0 and 255;
@@ -222,7 +226,7 @@ pub fn get_colors(into_id: &[u8]) -> [Color; 19] {
 fn choose_scheme(schemes: [SchemeElement; 7], d: u32) -> SchemeElement {
     let mut sum = 0;
     let mut found_scheme = None;
-    for x in schemes.into_iter() {
+    for x in schemes {
         sum += x.freq as u32;
         if d < sum {
             found_scheme = Some(x);

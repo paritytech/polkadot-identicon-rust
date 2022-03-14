@@ -176,11 +176,11 @@ pub fn calculate_png_data(size_in_pixels: u16, colors: [Color; 19]) -> Vec<u8> {
                     }
                 }
                 match some_small_circle {
-                    Some(color) => data.extend_from_slice(&color.to_slice()),
-                    None => data.extend_from_slice(&big_circle.rgba_color.to_slice()),
+                    Some(color) => data.extend_from_slice(&color.to_array()),
+                    None => data.extend_from_slice(&big_circle.rgba_color.to_array()),
                 }
             } else {
-                data.extend_from_slice(&Color::background().to_slice())
+                data.extend_from_slice(&Color::background().to_array())
             }
         }
     }
