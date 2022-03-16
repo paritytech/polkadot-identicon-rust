@@ -43,4 +43,4 @@ jobs:
           working-directory:  .
 
       - name:                 cargo nextest
-        run:                  cargo nextest run --retries 2 --locked
+        run:                  cargo nextest run --retries 2
