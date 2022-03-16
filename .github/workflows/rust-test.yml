@@ -9,7 +9,7 @@ on:
 
 jobs:
   check:
-    name:                     Cargo test on Ubuntu
+    name:                     Cargo nextest
     runs-on:                  ubuntu-latest
     steps:
 
@@ -43,8 +43,4 @@ jobs:
           working-directory:  .
 
       - name:                 cargo nextest
-        run:                  |
-          cd rust
-          cp os-specific-lock/android/Cargo.lock .
-          cp signer/android-hack/Cargo.toml signer
-          cargo nextest run --retries 2 --locked
+        run:                  cargo nextest run --retries 2 --locked
