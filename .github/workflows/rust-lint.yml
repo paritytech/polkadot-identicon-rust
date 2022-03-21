@@ -8,7 +8,7 @@ on:
       - stable
 
 jobs:
-  check:
+  rustfmt:
     name:                     Cargo fmt
     runs-on:                  ubuntu-latest
     steps:
