@@ -68,10 +68,7 @@ impl Color {
     /// convert `Color` into hex string, for `svg` image generation
     #[cfg(feature = "vec")]
     pub fn to_hex(&self) -> String {
-        format!(
-            "#{}",
-            hex::encode([self.red, self.green, self.blue])
-        )
+        format!("#{}", hex::encode([self.red, self.green, self.blue]))
     }
 
     /// set `Color` to default background, needed only for `png` images
@@ -129,7 +126,7 @@ impl Color {
         let blue = u8::from_component(color_srgb.blue);
 
         // finalize color, set alpha value to 255
-        Self{
+        Self {
             red,
             green,
             blue,
@@ -158,7 +155,7 @@ pub fn get_colors(into_id: &[u8]) -> [Color; 19] {
     // TODO For color calculation `sat` is used as saturation in percents
     // (this is taken as is from js code).
     // However, this way `sat_component` could have values above 1.00.
-    // Palette crate does not check at this moment that `sat_component` is not 
+    // Palette crate does not check at this moment that `sat_component` is not
     // overflowing 1.00, and produces some kind of resulting color.
     // Need to find out what should have happened if the sat values are above 100.
     let sat = (((id[29] as u16 * 70 / 256 + 26) % 80) + 30) as u8;
@@ -170,14 +167,14 @@ pub fn get_colors(into_id: &[u8]) -> [Color; 19] {
     for (i, x) in id.iter().enumerate() {
         let b = x.wrapping_add((i as u8 % 28).wrapping_mul(58));
         let new = match b {
-            0 => Color{
+            0 => Color {
                 red: 4,
                 green: 4,
                 blue: 4,
                 alpha: 255,
             },
             255 => Color::foreground(), // small circle is transparent, thus whatever is underneath it goes into `png` data, underneath is the foreground-colored large circle
-            _ => Color::derive(b, sat_component)
+            _ => Color::derive(b, sat_component),
         };
         my_palette.push(new);
     }
@@ -217,7 +214,9 @@ pub fn get_colors(into_id: &[u8]) -> [Color; 19] {
         my_colors.push(color);
     }
 
-    my_colors.try_into().expect("always generate 19-element set")
+    my_colors
+        .try_into()
+        .expect("always generate 19-element set")
 }
 
 /// Function to choose the coloring scheme based on value d.
@@ -251,53 +250,55 @@ mod tests {
 
     /// made with a color picking GIMP tool using the icon from polkadot website
     /// alpha set to 255 for all
-    fn alice_website() -> [Color; 19] {
+   #[rustfmt::skip]
+   fn alice_website() -> [Color; 19] {
         [
             Color{red: 165, green: 227, blue: 156, alpha: 255},
-            Color{red: 60, green: 40, blue: 17, alpha: 255},
-            Color{red: 184, green: 68, blue: 202, alpha: 255},
-            Color{red: 139, green: 39, blue: 88, alpha: 255},
-            Color{red: 135, green: 68, blue: 202, alpha: 255},
+            Color{red: 60,  green: 40,  blue: 17,  alpha: 255},
+            Color{red: 184, green: 68,  blue: 202, alpha: 255},
+            Color{red: 139, green: 39,  blue: 88,  alpha: 255},
+            Color{red: 135, green: 68,  blue: 202, alpha: 255},
             Color{red: 225, green: 156, blue: 227, alpha: 255},
-            Color{red: 139, green: 39, blue: 88, alpha: 255},
-            Color{red: 135, green: 68, blue: 202, alpha: 255},
-            Color{red: 184, green: 68, blue: 202, alpha: 255},
+            Color{red: 139, green: 39,  blue: 88,  alpha: 255},
+            Color{red: 135, green: 68,  blue: 202, alpha: 255},
+            Color{red: 184, green: 68,  blue: 202, alpha: 255},
             Color{red: 165, green: 227, blue: 156, alpha: 255},
-            Color{red: 60, green: 40, blue: 17, alpha: 255},
-            Color{red: 162, green: 202, blue: 68, alpha: 255},
-            Color{red: 39, green: 139, blue: 139, alpha: 255},
-            Color{red: 187, green: 202, blue: 68, alpha: 255},
-            Color{red: 38, green: 60, blue: 17, alpha: 255},
-            Color{red: 39, green: 139, blue: 139, alpha: 255},
-            Color{red: 187, green: 202, blue: 68, alpha: 255},
-            Color{red: 162, green: 202, blue: 68, alpha: 255},
-            Color{red: 61, green: 39, blue: 139, alpha: 255},
+            Color{red: 60,  green: 40,  blue: 17,  alpha: 255},
+            Color{red: 162, green: 202, blue: 68,  alpha: 255},
+            Color{red: 39,  green: 139, blue: 139, alpha: 255},
+            Color{red: 187, green: 202, blue: 68,  alpha: 255},
+            Color{red: 38,  green: 60,  blue: 17,  alpha: 255},
+            Color{red: 39,  green: 139, blue: 139, alpha: 255},
+            Color{red: 187, green: 202, blue: 68,  alpha: 255},
+            Color{red: 162, green: 202, blue: 68,  alpha: 255},
+            Color{red: 61,  green: 39,  blue: 139, alpha: 255},
         ]
     }
 
     /// made with a color picking GIMP tool using the icon from polkadot website
     /// alpha set to 255 for all
-    fn bob_website() -> [Color; 19] {
+   #[rustfmt::skip]
+   fn bob_website() -> [Color; 19] {
         [
-            Color{red: 58, green: 120, blue: 61, alpha: 255},
+            Color{red: 58,  green: 120, blue: 61,  alpha: 255},
             Color{red: 200, green: 214, blue: 169, alpha: 255},
             Color{red: 214, green: 169, blue: 182, alpha: 255},
-            Color{red: 36, green: 52, blue: 25, alpha: 255},
-            Color{red: 127, green: 93, blue: 177, alpha: 255},
+            Color{red: 36,  green: 52,  blue: 25,  alpha: 255},
+            Color{red: 127, green: 93,  blue: 177, alpha: 255},
             Color{red: 214, green: 169, blue: 182, alpha: 255},
-            Color{red: 58, green: 120, blue: 61, alpha: 255},
+            Color{red: 58,  green: 120, blue: 61,  alpha: 255},
             Color{red: 200, green: 214, blue: 169, alpha: 255},
-            Color{red: 52, green: 25, blue: 30, alpha: 255},
-            Color{red: 113, green: 177, blue: 93, alpha: 255},
-            Color{red: 58, green: 120, blue: 114, alpha: 255},
-            Color{red: 58, green: 120, blue: 108, alpha: 255},
-            Color{red: 118, green: 93, blue: 177, alpha: 255},
-            Color{red: 25, green: 52, blue: 39, alpha: 255},
-            Color{red: 58, green: 120, blue: 108, alpha: 255},
-            Color{red: 113, green: 177, blue: 93, alpha: 255},
-            Color{red: 58, green: 120, blue: 114, alpha: 255},
-            Color{red: 52, green: 25, blue: 30, alpha: 255},
-            Color{red: 33, green: 25, blue: 52, alpha: 255},
+            Color{red: 52,  green: 25,  blue: 30,  alpha: 255},
+            Color{red: 113, green: 177, blue: 93,  alpha: 255},
+            Color{red: 58,  green: 120, blue: 114, alpha: 255},
+            Color{red: 58,  green: 120, blue: 108, alpha: 255},
+            Color{red: 118, green: 93,  blue: 177, alpha: 255},
+            Color{red: 25,  green: 52,  blue: 39,  alpha: 255},
+            Color{red: 58,  green: 120, blue: 108, alpha: 255},
+            Color{red: 113, green: 177, blue: 93,  alpha: 255},
+            Color{red: 58,  green: 120, blue: 114, alpha: 255},
+            Color{red: 52,  green: 25,  blue: 30,  alpha: 255},
+            Color{red: 33,  green: 25,  blue: 52,  alpha: 255},
         ]
     }
 

@@ -33,7 +33,13 @@ const FILTER_TYPE: FilterType = FilterType::Lanczos3;
 #[cfg(feature = "pix")]
 /// Static 30x30 transparent `png`, for rare cases when the identicon
 /// generation fails or when the data to generate identicon is unavailable
-pub const EMPTY_PNG: &[u8] = &[137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 30, 0, 0, 0, 30, 8, 6, 0, 0, 0, 59, 48, 174, 162, 0, 0, 0, 46, 73, 68, 65, 84, 120, 156, 237, 205, 65, 1, 0, 32, 12, 0, 33, 237, 31, 122, 182, 56, 31, 131, 2, 220, 153, 57, 63, 136, 51, 226, 140, 56, 35, 206, 136, 51, 226, 140, 56, 35, 206, 136, 51, 251, 226, 7, 36, 207, 89, 197, 10, 134, 29, 92, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
+pub const EMPTY_PNG: &[u8] = &[
+    137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 30, 0, 0, 0, 30, 8, 6,
+    0, 0, 0, 59, 48, 174, 162, 0, 0, 0, 46, 73, 68, 65, 84, 120, 156, 237, 205, 65, 1, 0, 32, 12,
+    0, 33, 237, 31, 122, 182, 56, 31, 131, 2, 220, 153, 57, 63, 136, 51, 226, 140, 56, 35, 206,
+    136, 51, 226, 140, 56, 35, 206, 136, 51, 251, 226, 7, 36, 207, 89, 197, 10, 134, 29, 92, 0, 0,
+    0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
+];
 
 /// Polkadot identicon `png` data in `u8` vector format, from `&[u8]` input slice
 ///
@@ -86,7 +92,10 @@ pub fn generate_png(into_id: &[u8], size_in_pixels: u16) -> Result<Vec<u8>, png:
 /// let content = generate_png_with_colors(colors, size_in_pixels).unwrap();
 /// ```
 #[cfg(feature = "pix")]
-pub fn generate_png_with_colors(colors: [Color; 19], size_in_pixels: u16) -> Result<Vec<u8>, png::EncodingError> {
+pub fn generate_png_with_colors(
+    colors: [Color; 19],
+    size_in_pixels: u16,
+) -> Result<Vec<u8>, png::EncodingError> {
     let data = circles::calculate_png_data(size_in_pixels, colors);
     make_png_from_data(&data, size_in_pixels)
 }
@@ -121,7 +130,7 @@ pub fn generate_png_with_colors(colors: [Color; 19], size_in_pixels: u16) -> Res
 /// ```
 /// For image size 32, the `scaling_factor = 1` results in strongly pixelated image,
 /// it is identical to `generate_png` result.
-/// With `scaling_factor = 2` image is already much less pixelated, off-centering still 
+/// With `scaling_factor = 2` image is already much less pixelated, off-centering still
 /// visible; off-centering virtually disappears for `scaling factor = 4` and above,
 /// after `scaling factor = 6` it is quite challenging to find any image differences at all.
 ///
@@ -160,7 +169,7 @@ pub fn generate_png_with_colors(colors: [Color; 19], size_in_pixels: u16) -> Res
 ///
 /// To select the default values properly, a set of images with different scaling factors
 /// was generated for each of the filters.
-/// Signer at the moment uses 30 pix images. 
+/// Signer at the moment uses 30 pix images.
 ///
 /// ## Making image set to choose from
 ///
@@ -232,8 +241,9 @@ pub fn generate_png_scaled_custom_with_colors(
     scaling_factor: u8,
     filter_type: FilterType,
 ) -> Result<Vec<u8>, IdenticonError> {
-    let data_large = generate_png_with_colors(colors, size_in_pixels as u16 * scaling_factor as u16)
-        .map_err(IdenticonError::Png)?;
+    let data_large =
+        generate_png_with_colors(colors, size_in_pixels as u16 * scaling_factor as u16)
+            .map_err(IdenticonError::Png)?;
     let image_large = load_from_memory(&data_large).map_err(IdenticonError::Image)?;
     let image_small = resize(
         &image_large,
