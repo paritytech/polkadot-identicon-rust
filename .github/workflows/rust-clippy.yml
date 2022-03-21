@@ -31,5 +31,10 @@ jobs:
           toolchain:          stable
           override:           true
 
+      - name:                 Rust Cache
+        uses:                 Swatinem/rust-cache@v1.3.0
+        with:
+          working-directory:  .
+
       - name:                 cargo clippy
         run:                  cargo clippy --all-targets --all-features -- -D warnings
