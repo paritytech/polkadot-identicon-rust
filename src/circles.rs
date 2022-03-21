@@ -23,7 +23,7 @@ fn in_circle(x: i32, y: i32, circle: &Circle) -> bool {
 
 /// Information about circle center position
 ///
-/// `position_circle_set` sets default positions for small circles in 19-circles icon 
+/// `position_circle_set` sets default positions for small circles in 19-circles icon
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct CirclePosition {
     pub x_center: f32,
@@ -160,9 +160,7 @@ pub fn calculate_png_data(size_in_pixels: u16, colors: [Color; 19]) -> Vec<u8> {
     let small_circles_set = get_colored_circles(center_to_center, small_radius, colors);
 
     let iter_start = -(size_in_pixels as i32) / 2;
-    let iter_end = {
-        (size_in_pixels >> 1) + (size_in_pixels & 0x01)
-    } as i32;
+    let iter_end = { (size_in_pixels >> 1) + (size_in_pixels & 0x01) } as i32;
 
     // calculating color for each pixel
     for y in iter_start..iter_end {
