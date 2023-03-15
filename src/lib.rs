@@ -251,7 +251,7 @@ pub fn generate_png_scaled_custom_with_colors(
         size_in_pixels as u32,
         filter_type,
     );
-    make_png_from_data(&image_small.to_vec(), size_in_pixels as u16).map_err(IdenticonError::Png)
+    make_png_from_data(&image_small, size_in_pixels as u16).map_err(IdenticonError::Png)
 }
 
 /// Data for small-sized identicon `png`, from `&[u8]` input slice,
