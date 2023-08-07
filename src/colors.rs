@@ -327,11 +327,14 @@ mod tests {
         let b: u8 = 212u8;
         let saturation = 0.56;
         let color = Color::derive(b, saturation);
-        assert_eq!(color, Color {
-            red: 165,
-            green: 227,
-            blue: 156,
-            alpha: 255,
-        });
+        assert_eq!(
+            color,
+            Color {
+                red: 165,
+                green: 227,
+                blue: 156,
+                alpha: 255,
+            }
+        );
     }
 }
